@@ -6,7 +6,8 @@
         "ms-python.vscode-pylance",
         "paulober.pico-w-go",
         "platformio.platformio-ide",
-        "visualstudioexptteam.vscodeintellicode"
+        "visualstudioexptteam.vscodeintellicode",
+        "wokwi.wokwi-vscode"
     ],
     "unwantedRecommendations": [
         "ms-vscode.cpptools-extension-pack"
