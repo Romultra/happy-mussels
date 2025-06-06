@@ -1,3 +1,11 @@
+# PlatformIO
+.pio
+.vscode/launch.json
+.vscode/c_cpp_properties.json
+
+# Secrets and sensitive data
+src/secrets.h
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -192,7 +200,3 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
-
-.pio
-.vscode/launch.json
-.vscode/c_cpp_properties.json
