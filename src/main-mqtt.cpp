@@ -45,26 +45,7 @@ void setup() {
   tempPID.SetOutputLimits(0, 100); // Set output limits for the PID controller
 }
 
-void reconnect() {
-  // Add before attempting connection
-  Serial.println("Network information:");
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-  Serial.print("DNS server: ");
-  Serial.println(WiFi.dnsIP());
-
-  // Try manual DNS resolution
-  IPAddress resolvedIP;
-  int dnsResult = WiFi.hostByName(mqttHost, resolvedIP);
-  Serial.print("DNS lookup result: ");
-  Serial.print(dnsResult);
-  Serial.print(" - IP: ");
-  if(dnsResult > 0) {
-    Serial.println(resolvedIP);
-  } else {
-    Serial.println("Failed to resolve");
-  }
-  
+void reconnect() {  
   // Loop until we're reconnected
   while (!mqtt.connected()) {
     Serial.print("Attempting MQTT connection...");
