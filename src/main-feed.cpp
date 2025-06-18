@@ -3,6 +3,7 @@
 #include <secrets.h>
 #include <AdafruitIO_WiFi.h>
 #include <utils.h>
+#include <PID_v1.h>
 
 #define LED_PIN 13
 
@@ -16,58 +17,62 @@ AdafruitIO_Feed *led = io.feed("Led 27");
 // Function prototype for the message handler
 void handleMessage(AdafruitIO_Data *data);
 
+double tempSetpoint, tempInput, tempOutput;
+PID tempPID(&tempInput, &tempOutput, &tempSetpoint,20,5,1, REVERSE);
+
+double odSetpoint, odInput, odOutput;
+PID odPID(&odInput, &odOutput, &odSetpoint, 2, 5, 1, DIRECT);
+
+double tempValue = 25; // Simulate initial temperature value
+
 void setup() {
   pinMode(LED_PIN, OUTPUT);
+
   // start the serial connection
   Serial.begin(115200);
-
   // wait for serial monitor to open
   while(!Serial);
 
   // connect to Wi-Fi
   connectToWiFi();
-
-  Serial.print("Connecting to Adafruit IO");
-  // connect to io.adafruit.com
-  io.connect();
-
-  // wait for a connection
-  while(io.status() < AIO_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  // we are connected
-  Serial.println();
-  Serial.println(io.statusText());
+  connectToAdafruitIO(&io);
 
   led->onMessage(handleMessage);
   led->get();
 
+  Serial.print("sending -> ");
+  Serial.println(tempValue);
+  temp->save(tempValue);
+
+  tempInput = tempValue; // Set initial temperature input
+  tempSetpoint = 18.0; // Set desired temperature
+
+  //turn the PID on
+  tempPID.SetMode(AUTOMATIC);
+  tempPID.SetOutputLimits(0, 100); // Set output limits for the PID controller
 }
 
+
+
 void loop() {
-  // io.run(); is required for all sketches.
-  // it should always be present at the top of your loop
-  // function. it keeps the client connected to
-  // io.adafruit.com, and processes any incoming data.
   io.run();
-  /*
-  long tempValue = random(20, 30); // Simulate temperature data
-  long pumpSpeedValue = random(0, 101); // Simulate pump speed data in percentage
-  // save count to the 'counter' feed on Adafruit IO
-  Serial.print("sending -> ");
-  Serial.print(tempValue);
-  Serial.print(" ");
-  Serial.println(pumpSpeedValue);
+  // Update the temperature input with simulated data
+  //Serial.print("sending -> ");
+  //Serial.println(tempInput);
+  //temp->save(tempInput);
 
-  temp->save(tempValue);
-  pumpSpeed->save(pumpSpeedValue);
+  tempPID.Compute();
+  tempValue = tempValue - (tempOutput-5) * 0.01; // Simulate temperature change based on pump output
+  tempInput = tempValue;
+  
+  Serial.print("Current Temperature: ");
+  Serial.print(tempInput);
+  Serial.print(" | Setpoint: ");
+  Serial.print(tempSetpoint);
+  Serial.print(" | Pump Speed: ");
+  Serial.println(tempOutput);
 
-  // Adafruit IO is rate limited for publishing, so a delay is required in
-  // between feed->save events. In this example, we will wait three seconds
-  delay(4000);
-  */
+  delay(1000);
 }
 
 void handleMessage(AdafruitIO_Data *data) {
