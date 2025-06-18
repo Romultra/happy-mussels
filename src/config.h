@@ -5,8 +5,8 @@
 // Choose the Wi-Fi between DTU, PERSONAL_1, or PERSONAL_2, WOKWI
 //#define DTU
 //#define PERSONAL_1
-#define PERSONAL_2
-//#define WOKWI
+//#define PERSONAL_2
+#define WOKWI
 
 #ifdef DTU
   #define WIFI_SSID DTU_SSID
