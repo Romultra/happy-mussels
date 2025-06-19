@@ -186,3 +186,48 @@ void printLocalTime(){
   Serial.println(timeWeekDay);
   Serial.println();
 }
+
+
+
+//Controlling the 12V pump.
+
+
+#include <Arduino.h>
+#include "utils.h"
+
+// Only the pin numbers are global
+const int C1_pin = 12;
+const int C2_pin = 13;
+
+void initPumpPWM() {
+  // All PWM constants are local to this function
+  const int pwmFreq       = 5000;  // 5 kHz
+  const int pwmChannel1   = 0;     // LEDC ch0 → C1
+  const int pwmChannel2   = 1;     // LEDC ch1 → C2
+  const int pwmResolution = 10;    // 10-bit (0–1023)
+
+  // configure the two PWM channels and attach pins
+  ledcSetup(pwmChannel1, pwmFreq, pwmResolution);
+  ledcAttachPin(C1_pin, pwmChannel1);
+
+  ledcSetup(pwmChannel2, pwmFreq, pwmResolution);
+  ledcAttachPin(C2_pin, pwmChannel2);
+}
+
+void setPumpIntensity(int intensityPercent) {
+  // warning if out of the 60–100% “safe” range
+  if (intensityPercent < 60 || intensityPercent > 100) {
+    Serial.printf("WARNING: pump intensity %d%% is out of range (60 to 100%%)\n",
+                  intensityPercent);
+  }
+  // map 0–100% → 0–1023
+  int maxDuty = (1 << 10) - 1;  // 10-bit resolution
+  int duty    = map(intensityPercent, 0, 100, 0, maxDuty);
+
+  // drive forward: PWM on C1, zero on C2
+  // note: we repeat the same channel numbers as in initPumpPWM()
+  ledcWrite(0, duty);
+  ledcWrite(1, 0);
+
+  Serial.printf("Pump @ %d%% → duty %d/%d\n", intensityPercent, duty, maxDuty);
+}
