@@ -71,7 +71,7 @@ bool setPumpSpeed(int speed8Bit) {  // Map 0-255 pump speed to 60-100% duty cycl
 constexpr int TEMP_ADC_PIN = 32; // Adjust as needed
 constexpr int NUM_TEMP_SAMPLES = 25;
 constexpr float NOM_RES = 10000.0;
-constexpr float SER_RES = 9820.0;
+constexpr float SER_RES = 10010.0;
 constexpr float TEMP_NOM = 25.0;
 constexpr float THERM_B_COEFF = 3950.0;
 constexpr int ADC_MAX_VAL = 4095;
@@ -102,4 +102,19 @@ float readThermistorTemp() {
   steinhart += 1.0 / (TEMP_NOM + 273.15);
   steinhart = (1.0 / steinhart) - 273.15;
   return steinhart;
+}
+
+float readThermistorResistance() {
+  uint32_t raw_sum = 0;
+  for (int i = 0; i < NUM_TEMP_SAMPLES; i++) {
+    raw_sum += analogRead(TEMP_ADC_PIN);
+  }
+  float raw_avg = (float)raw_sum / NUM_TEMP_SAMPLES;
+  int idx = round(raw_avg);
+  if (idx < 0) idx = 0;
+  if (idx > ADC_MAX_VAL) idx = ADC_MAX_VAL;
+  float V_measured = adc_V_lookup[idx];
+  float raw_scaled = ADC_MAX_VAL * V_measured / ADC_VMAX;
+  float resistance = (SER_RES * raw_scaled) / (ADC_MAX_VAL - raw_scaled);
+  return resistance;
 }

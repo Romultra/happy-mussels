@@ -24,5 +24,8 @@ bool setPumpSpeed(int speed8Bit);
 /// Read the thermistor temperature in Celsius (uses lookup table and Steinhart-Hart)
 float readThermistorTemp();
 
+/// Read the thermistor resistance in ohms (uses lookup table)
+float readThermistorResistance();
+
 
 #endif
