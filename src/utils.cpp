@@ -1,203 +1,12 @@
-#include <config.h>
-#include <WiFi.h>
-#include <esp_wpa2.h>
-#include <esp_wifi.h>
+#include <Arduino.h>
 #include <utils.h>
-#include <AdafruitIO.h>
-#include <time.h>  // Added for getLocalTime() function
-
-// Define the caCert variable - moved from header file to implementation file
-const char* caCert = R"EOF(
------BEGIN CERTIFICATE-----
-MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
-TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
-cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
-WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
-ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
-MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK3oJHP0FDfzm54rVygc
-h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
-0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
-A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
-T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH
-B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC
-B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv
-KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn
-OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn
-jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw
-qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53CI
-rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
-HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
-hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
-ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
-3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
-NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
-ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
-TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
-jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
-oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
-4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
-mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
-emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
------END CERTIFICATE-----
-)EOF";
-
-void connectToWiFi() {
-  // Connect to Wi-Fi network with SSID and password
-  Serial.print("Connecting to ");
-  Serial.println(WIFI_SSID);
-  WiFi.mode(WIFI_STA);   // Set WiFi to station mode
-  
-  // WPA2 Enterprise setup
-  WiFi.disconnect(true); // Reset WiFi
-  #ifdef DTU
-  esp_wifi_sta_wpa2_ent_set_identity((uint8_t *)WIFI_USERNAME, strlen(WIFI_USERNAME));
-  esp_wifi_sta_wpa2_ent_set_username((uint8_t *)WIFI_USERNAME, strlen(WIFI_USERNAME));
-  esp_wifi_sta_wpa2_ent_set_password((uint8_t *)WIFI_PASSWORD, strlen(WIFI_PASSWORD));
-
-  WiFi.begin(WIFI_SSID);
-  esp_wifi_sta_wpa2_ent_enable();
-  #elif defined(PERSONAL_1) || defined(PERSONAL_2) || defined(WOKWI)  
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  #endif
-  
-  // Wait for connecting with status updates
-  for (int i = 0; i < 20 && WiFi.status() != WL_CONNECTED; i++) {
-    delay(500);
-    Serial.print(".");
-    
-    if (i % 10 == 9) {
-      Serial.print(" [Status: ");
-      Serial.print(WiFi.status());
-      Serial.println("]");
-    }
-  }
-  
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println();
-    
-    // Print meaningful error based on status
-    switch (WiFi.status()) {
-      case WL_NO_SSID_AVAIL:
-        Serial.println("ERROR: SSID not found. Check hotspot is on.");
-        break;
-      case WL_CONNECT_FAILED:
-        Serial.println("ERROR: Connection failed. Check password.");
-        break;
-      case WL_DISCONNECTED:
-        Serial.println("ERROR: Failed to connect to AP.");
-        break;
-      default:
-        Serial.print("ERROR: Failed with status: ");
-        Serial.println(WiFi.status());
-    }
-  }
-  
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println();
-    Serial.println("FAILED to connect to wifi !");
-    Serial.println("Check that:");
-    Serial.println("1. Hotspot is turned on and in range");
-    Serial.println("2. Credentials are correct");
-    Serial.println("3. Hotspot allows new connections");
-    Serial.println();
-    Serial.println("Continuing without WiFi...");
-  } else {
-    Serial.println("");
-    Serial.println("WiFi connected successfully!");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-  }
-  
-  return;
-}
-
-// Function to connect to Adafruit IO using an AdafruitIO instance
-void connectToAdafruitIO(AdafruitIO* io) {
-  // Connect to Adafruit IO
-  Serial.print("Connecting to Adafruit IO");
-
-  // connect to io.adafruit.com
-  io->connect();
-
-  // wait for a connection
-  while(io->status() < AIO_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  
-  // we are connected
-  Serial.println();
-  Serial.println(io->statusText());
-
-  return;
-}
-
-int resolveDNS(const char* mqttHost) {
-  IPAddress resolvedIP;
-  // Resolve the DNS for the MQTT host
-  Serial.print("Resolving DNS for ");
-  Serial.println(mqttHost);
-  
-  int dnsResult = WiFi.hostByName(mqttHost, resolvedIP);
-  
-  Serial.print("DNS lookup result: ");
-  Serial.print(dnsResult);
-  Serial.print(" - IP: ");
-  
-  if (dnsResult > 0) {
-    Serial.println(resolvedIP);
-  } else {
-    Serial.println("Failed to resolve");
-  }
-  
-  return dnsResult;
-}
-
-void printLocalTime(){
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-  Serial.print("Day of week: ");
-  Serial.println(&timeinfo, "%A");
-  Serial.print("Month: ");
-  Serial.println(&timeinfo, "%B");
-  Serial.print("Day of Month: ");
-  Serial.println(&timeinfo, "%d");
-  Serial.print("Year: ");
-  Serial.println(&timeinfo, "%Y");
-  Serial.print("Hour: ");
-  Serial.println(&timeinfo, "%H");
-  Serial.print("Hour (12 hour format): ");
-  Serial.println(&timeinfo, "%I");
-  Serial.print("Minute: ");
-  Serial.println(&timeinfo, "%M");
-  Serial.print("Second: ");
-  Serial.println(&timeinfo, "%S");
-
-  Serial.println("Time variables");
-  char timeHour[3];
-  strftime(timeHour,3, "%H", &timeinfo);
-  Serial.println(timeHour);
-  char timeWeekDay[10];
-  strftime(timeWeekDay,10, "%A", &timeinfo);
-  Serial.println(timeWeekDay);
-  Serial.println();
-}
-
-
+#include <math.h>
 
 //Controlling the 12V pump.
 
-
-#include <Arduino.h>
-#include "utils.h"
-
 // Only the pin numbers are global
-const int C1_pin = 12;
-const int C2_pin = 13;
+constexpr int C1_pin = 12;
+constexpr int C2_pin = 13;
 
 void initPumpPWM() {
   // All PWM constants are local to this function
@@ -214,20 +23,88 @@ void initPumpPWM() {
   ledcAttachPin(C2_pin, pwmChannel2);
 }
 
-void setPumpIntensity(int intensityPercent) {
-  // warning if out of the 60–100% “safe” range
-  if (intensityPercent < 60 || intensityPercent > 100) {
-    Serial.printf("WARNING: pump intensity %d%% is out of range (60 to 100%%)\n",
+bool setPumpIntensity(double intensityPercent) {
+  // warning if out of the 60–100% "safe" range
+  if (intensityPercent < 60.0 || intensityPercent > 100.0) {
+    Serial.printf("ERROR: pump intensity %.2f%% is out of range (60.0 to 100.0%%)\n",
                   intensityPercent);
+    return false; // Return false to indicate failure
   }
-  // map 0–100% → 0–1023
+  // map 0–100% → 0–1023 with floating point precision
   int maxDuty = (1 << 10) - 1;  // 10-bit resolution
-  int duty    = map(intensityPercent, 0, 100, 0, maxDuty);
+  int duty    = (int)((intensityPercent / 100.0) * maxDuty + 0.5);  // Round to nearest integer
 
   // drive forward: PWM on C1, zero on C2
   // note: we repeat the same channel numbers as in initPumpPWM()
   ledcWrite(0, duty);
   ledcWrite(1, 0);
 
-  Serial.printf("Pump @ %d%% → duty %d/%d\n", intensityPercent, duty, maxDuty);
+  Serial.printf("Pump @ %.2f%% → duty %d/%d\n", intensityPercent, duty, maxDuty);
+  return true; // Return true to indicate success
+}
+
+bool setPumpSpeed(int speed8Bit) {  // Map 0-255 pump speed to 60-100% duty cycle range
+  // 0 = pump off, 255 = full speed
+  
+  if (speed8Bit < 0 || speed8Bit > 255) {
+    Serial.printf("ERROR: pump speed %d is out of range (0 to 255)\n", speed8Bit);
+    return false;
+  }
+  
+  if (speed8Bit == 0) {
+    // Turn pump off
+    ledcWrite(0, 0);
+    ledcWrite(1, 0);
+    Serial.println("Pump OFF (0/255 speed)");
+    return true;
+  }
+    // Map 1-255 to 60-100% duty cycle with floating point precision
+  double dutyCyclePercent = 60.0 + ((double)(speed8Bit - 1) / 254.0) * 40.0;
+  
+  Serial.printf("Mapping %d/255 speed to %.2f%% duty cycle\n", speed8Bit, dutyCyclePercent);
+  return setPumpIntensity(dutyCyclePercent);
+}
+
+// ---- Thermistor/Temperature Reading Functions ----
+
+// Example lookup table (replace with your calibration data)
+const float adc_V_lookup[1024] = {
+  // Fill this with your calibration data from main-calibration.cpp output
+  // e.g. 0.0185, 0.0494, ... up to 1023 values
+};
+
+constexpr int TEMP_ADC_PIN = 32; // Adjust as needed
+constexpr int NUM_TEMP_SAMPLES = 25;
+constexpr float NOM_RES = 10000.0;
+constexpr float SER_RES = 9820.0;
+constexpr float TEMP_NOM = 25.0;
+constexpr float THERM_B_COEFF = 3950.0;
+constexpr int ADC_MAX_VAL = 4095;
+constexpr float ADC_VMAX = 3.16;
+
+float readThermistorTemp() {
+  uint32_t raw_sum = 0;
+  for (int i = 0; i < NUM_TEMP_SAMPLES; i++) {
+    raw_sum += analogRead(TEMP_ADC_PIN);
+  }
+  float raw_avg = (float)raw_sum / NUM_TEMP_SAMPLES;
+  Serial.print("raw_avg = "); Serial.println(raw_avg);
+
+  // Lookup voltage
+  int idx = round(raw_avg);
+  if (idx < 0) idx = 0;
+  if (idx > ADC_MAX_VAL) idx = ADC_MAX_VAL;
+  float V_measured = adc_V_lookup[idx];
+  Serial.print("V_measured = "); Serial.println(V_measured, 5);
+
+  // Convert to resistance
+  float raw_scaled = ADC_MAX_VAL * V_measured / ADC_VMAX;
+  float resistance = (SER_RES * raw_scaled) / (ADC_MAX_VAL - raw_scaled);
+  Serial.print("Thermistor resistance: "); Serial.print(resistance); Serial.println(" ohms");
+
+  // Steinhart-Hart equation
+  float steinhart = log(resistance / NOM_RES) / THERM_B_COEFF;
+  steinhart += 1.0 / (TEMP_NOM + 273.15);
+  steinhart = (1.0 / steinhart) - 273.15;
+  return steinhart;
 }
