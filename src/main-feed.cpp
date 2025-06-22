@@ -3,6 +3,7 @@
 #include <secrets.h>
 #include <AdafruitIO_WiFi.h>
 #include <utils.h>
+#include <network.h>
 #include <PID_v1.h>
 
 #define LED_PIN 13

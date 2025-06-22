@@ -7,6 +7,7 @@
 #include <WiFi.h>
 #include <config.h>
 #include <utils.h>
+#include <network.h>
 
 // Set web server port number to 80
 WiFiServer server(80);
