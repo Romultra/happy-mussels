@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <utils.h>
 #include <math.h>
+#include "adc_lookup_table.h"
 
 //Controlling the 12V pump.
 
@@ -66,12 +67,6 @@ bool setPumpSpeed(int speed8Bit) {  // Map 0-255 pump speed to 60-100% duty cycl
 }
 
 // ---- Thermistor/Temperature Reading Functions ----
-
-// Example lookup table (replace with your calibration data)
-const float adc_V_lookup[1024] = {
-  // Fill this with your calibration data from main-calibration.cpp output
-  // e.g. 0.0185, 0.0494, ... up to 1023 values
-};
 
 constexpr int TEMP_ADC_PIN = 32; // Adjust as needed
 constexpr int NUM_TEMP_SAMPLES = 25;
