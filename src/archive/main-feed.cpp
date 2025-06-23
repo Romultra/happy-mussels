@@ -18,6 +18,8 @@ AdafruitIO_Feed *led = io.feed("Led 27");
 // Function prototype for the message handler
 void handleMessage(AdafruitIO_Data *data);
 
+void connectToAdafruitIO(AdafruitIO* io);
+
 double tempSetpoint, tempInput, tempOutput;
 PID tempPID(&tempInput, &tempOutput, &tempSetpoint,20,5,1, REVERSE);
 
@@ -90,4 +92,25 @@ void handleMessage(AdafruitIO_Data *data) {
   } else {
     Serial.println("Unknown command received");
   }
+}
+
+// Function to connect to Adafruit IO using an AdafruitIO instance
+void connectToAdafruitIO(AdafruitIO* io) {
+  // Connect to Adafruit IO
+  Serial.print("Connecting to Adafruit IO");
+
+  // connect to io.adafruit.com
+  io->connect();
+
+  // wait for a connection
+  while(io->status() < AIO_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  
+  // we are connected
+  Serial.println();
+  Serial.println(io->statusText());
+
+  return;
 }
