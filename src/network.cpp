@@ -4,7 +4,6 @@
 #include <esp_wpa2.h>
 #include <esp_wifi.h>
 #include <network.h>
-#include <AdafruitIO.h>
 #include <time.h>
 
 // Define the caCert variable - moved from header file to implementation file
@@ -109,27 +108,6 @@ void connectToWiFi() {
     Serial.println(WiFi.localIP());
   }
   
-  return;
-}
-
-// Function to connect to Adafruit IO using an AdafruitIO instance
-void connectToAdafruitIO(AdafruitIO* io) {
-  // Connect to Adafruit IO
-  Serial.print("Connecting to Adafruit IO");
-
-  // connect to io.adafruit.com
-  io->connect();
-
-  // wait for a connection
-  while(io->status() < AIO_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  
-  // we are connected
-  Serial.println();
-  Serial.println(io->statusText());
-
   return;
 }
 
