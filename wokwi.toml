@@ -1,7 +1,7 @@
 [wokwi]
 version = 1
-firmware = '.pio/build/mqtt/firmware.bin'
-elf = '.pio/build/mqtt/firmware.elf'
+firmware = '.pio/build/calibration/firmware.bin'
+elf = '.pio/build/calibration/firmware.elf'
 
 # Forward http://localhost:8180 to port 80 on the simulated ESP32:
 [[net.forward]]
