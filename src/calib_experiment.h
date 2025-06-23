@@ -9,4 +9,4 @@ float measureChannel(String color, uint8_t integrationTime = TCS34725_INTEGRATIO
 void setNeoPixelColor(uint8_t r, uint8_t g, uint8_t b);
 uint16_t integrationTimeToMs(uint8_t integrationTime);
 void balanceLedBrightness();
-void runPumpForSeconds(int seconds);
+extern int runPumpForSeconds(int seconds);

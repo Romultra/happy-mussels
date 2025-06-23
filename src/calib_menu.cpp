@@ -161,6 +161,9 @@ void loadLightCalibration() {
 }
 
 void saveLogicParameters() {
+  extern int circulationTimeMs;
+  extern int defaultPumpSpeed;
+  extern int nMeasurements;
   prefs.putInt("circulationTimeMs", circulationTimeMs);
   prefs.putInt("defaultPumpSpeed", defaultPumpSpeed);
   prefs.putInt("nMeasurements", nMeasurements);

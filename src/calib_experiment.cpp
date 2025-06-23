@@ -24,7 +24,7 @@ void autoCalibrateLight() {
   Serial.println("Insert BLANK solvent (no algae) into sensor.");
   Serial.println("Press any key when ready or 'q' to quit.");
   if (waitForUser() == 1) return;
-  runPumpForSeconds(circulationTimeMs / 1000);
+  if (runPumpForSeconds(circulationTimeMs / 1000) == 1) return;
 
   // Set LEDs to maximum
   bestLedR = 255; bestLedG = 255; bestLedB = 255;
@@ -76,7 +76,7 @@ void autoCalibrateLight() {
     tcs.setGain(gains[j]);
     delay(100);
     // Loop through integrationTimes from highest to lowest (inner loop)
-    for (int i = (int)(sizeof(integrationTimes)/sizeof(integrationTimes[0])) - 2; i >= 0; i--) {
+    for (int i = (int)(sizeof(integrationTimes)/sizeof(integrationTimes[0])) - 1; i >= 0; i--) {
       tcs.setIntegrationTime(integrationTimes[i]);
       delay(100);
       // For each color, turn on only that LED and measure clear channel
@@ -160,14 +160,14 @@ void calibrationSequence() {
     Serial.println("1. REMOVE last concentration (manual, save it)");
     Serial.println("2. Insert blank solvent circuit, then press any key to run rinse cycle.");
     if (waitForUser() == 1) return;
-    runPumpForSeconds(circulationTimeMs / 1000);
+    if (runPumpForSeconds(circulationTimeMs / 1000) == 1) return;
 
     Serial.println("3. EMPTY the tube fully (manual). Press any key when done.");
     if (waitForUser() == 1) return;
 
     Serial.println("4. CIRCULATE new calibration solution (pump ON, 20s to remove air pockets). Press any key to start.");
     if (waitForUser() == 1) return;
-    runPumpForSeconds(circulationTimeMs / 1000);
+    if (runPumpForSeconds(circulationTimeMs / 1000) == 1) return;
 
     Serial.println("5. Measuring with FLOW (pump ON)...");
     float resultsFlow[3][nMeasurements]; // 0:Red, 1:Green, 2:Blue (clear channel for each color)
@@ -341,11 +341,11 @@ uint16_t integrationTimeToMs(uint8_t integrationTime) {
 }
 
 void balanceLedBrightness() {
-  const uint16_t target = 45000;
+  const uint16_t target = 40000;
   const uint8_t maxIterations = 40;
   const uint8_t minLed = 1;
   const uint8_t maxLed = 255;
-  const uint8_t step = 4;
+  const uint8_t step = 2;
   
   bestGain = TCS34725_GAIN_16X;
   bestIntegrationTime = TCS34725_INTEGRATIONTIME_499MS;
@@ -355,7 +355,7 @@ void balanceLedBrightness() {
   Serial.println("Insert BLANK solvent (no algae) into sensor.");
   Serial.println("Press any key when ready.");
   if (waitForUser() == 1) return;
-  runPumpForSeconds(circulationTimeMs / 1000);
+  if (runPumpForSeconds(circulationTimeMs / 1000) == 1) return;
 
   int* leds[3] = {&bestLedR, &bestLedG, &bestLedB};
   const char* colors[3] = {"red", "green", "blue"};
@@ -392,10 +392,11 @@ void balanceLedBrightness() {
   Serial.println("LED brightness balanced and saved.");
 }
 
-void runPumpForSeconds(int seconds) {
+// Change runPumpForSeconds to return int: 1 if quit, 0 if completed
+int runPumpForSeconds(int seconds) {
   if (seconds <= 0) {
     Serial.println("Invalid time. Must be > 0.");
-    return;
+    return 0;
   }
   Serial.print("Running pump at speed ");
   Serial.print(defaultPumpSpeed);
@@ -408,10 +409,12 @@ void runPumpForSeconds(int seconds) {
   while (millis() - start < duration) {
     if (checkForQuit()) {
       Serial.println("Pump stopped early by user.");
-      break;
+      setPumpSpeed(0);
+      return 1;
     }
     delay(100); // check every 100ms
   }
   setPumpSpeed(0);
   Serial.println("Pump stopped.");
+  return 0;
 }

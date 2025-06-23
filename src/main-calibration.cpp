@@ -23,8 +23,8 @@ Preferences prefs;
 // Global variables for light parameter locking
 int bestLedR = 255, bestLedG = 255, bestLedB = 255;
 uint8_t lastIntegrationTime = TCS34725_INTEGRATIONTIME_101MS;
-uint8_t bestIntegrationTime = TCS34725_INTEGRATIONTIME_499MS;
-tcs34725Gain_t bestGain = TCS34725_GAIN_16X;
+uint8_t bestIntegrationTime = TCS34725_INTEGRATIONTIME_240MS;
+tcs34725Gain_t bestGain = TCS34725_GAIN_60X;
 
 // TCS34725 sensor setup (default: 101ms, 1x gain)
 Adafruit_TCS34725 tcs = Adafruit_TCS34725(bestIntegrationTime, bestGain);
