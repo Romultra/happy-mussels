@@ -10,10 +10,10 @@
 // NeoPixel setup
 #define NEOPIXEL_PIN 32
 #define NEOPIXEL_NUM 1
-Adafruit_NeoPixel strip(NEOPIXEL_NUM, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+// Adafruit_NeoPixel strip(NEOPIXEL_NUM, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 // Settings
-int nMeasurements = 5; // Number of repeated measurements for averaging
+// int nMeasurements = 5; // Number of repeated measurements for averaging
 int defaultPumpSpeed = 128; // Adjust as needed
 int circulationTimeMs = 20000; // Circulation/rinse time in milliseconds (default: 20 sec)
 
@@ -23,11 +23,11 @@ Preferences prefs;
 // Global variables for light parameter locking
 int bestLedR = 255, bestLedG = 255, bestLedB = 255;
 uint8_t lastIntegrationTime = TCS34725_INTEGRATIONTIME_101MS;
-uint8_t bestIntegrationTime = TCS34725_INTEGRATIONTIME_240MS;
-tcs34725Gain_t bestGain = TCS34725_GAIN_60X;
+// uint8_t bestIntegrationTime = TCS34725_INTEGRATIONTIME_240MS;
+// tcs34725Gain_t bestGain = TCS34725_GAIN_60X;
 
 // TCS34725 sensor setup (default: 101ms, 1x gain)
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(bestIntegrationTime, bestGain);
+// Adafruit_TCS34725 tcs = Adafruit_TCS34725(bestIntegrationTime, bestGain);
 
 bool csvHeaderWritten = false;
 
@@ -50,14 +50,14 @@ void setup() {
   loadLightCalibration();
   loadLogicParameters();
 
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
+  // strip.begin();
+  // strip.show(); // Initialize all pixels to 'off'
 
   initPumpPWM(); // Initialize pump PWM
 
   if (!tcs.begin()) {
     Serial.println("No TCS34725 sensor found ... check your connections");
-    while (1);
+    //while (1);
   }
 
   tcs.setIntegrationTime(bestIntegrationTime);

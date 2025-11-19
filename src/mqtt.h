@@ -11,7 +11,10 @@ void initMQTT();
 // Function to reconnect to MQTT broker
 void reconnect();
 
-// MQTT message callback
-void onMqttMessage(char* topic, byte* payload, unsigned int len);
+// MQTT message callback (now extern, can be defined in main)
+extern void onMqttMessage(char* topic, byte* payload, unsigned int len);
+
+// Function to send status updates
+void sendStatus(const char* loop_id);
 
 #endif
